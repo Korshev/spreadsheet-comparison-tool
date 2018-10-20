@@ -1,0 +1,32 @@
+/* layout.css Style */
+.dropzone {
+    height: 200px;
+    border-width: 2px;
+    margin-bottom: 20px;
+}
+
+/* skin.css Style*/
+.dropzone {
+    color: #ccc;
+    border-style: dashed;
+    border-color: #ccc;
+    line-height: 200px;
+    text-align: center;
+}
+
+.dropzone.drop {
+    color: #222;
+    border-color: #222;
+    border-style: solid;
+}
+
+/* debugging */
+div .debugging {
+    border-width: 1px;
+    border-style: solid;
+    padding: 10px;
+}
+
+table td {
+    border: 1px solid;
+}
