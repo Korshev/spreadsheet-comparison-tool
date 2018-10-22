@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Spreadsheet Comparison Tool</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="test.js"></script>
+</head>
+
+<body>
+        <input 
+            type="file" 
+            multiple 
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            onchange="handleFiles(this.files)"
+        >
+</body>
+
+</html>

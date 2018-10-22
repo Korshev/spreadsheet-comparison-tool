@@ -46,6 +46,28 @@ function toggleDisplayLines() {
     }
 }
 
+// event listeners 
+
+// https://stackoverflow.com/questions/19655189/javascript-click-event-listener-on-class
+var dropzones = document.getElementsByClassName("dropzone");
+Array.from(dropzones,
+    dz => {
+        dz.addEventListener("dragenter", dragenter, false);
+        dz.addEventListener("dragover", dragover, false);
+        dz.addEventListener("drop", drop, false);
+    }
+);
+
+// https://stackoverflow.com/questions/5897122/accessing-elements-by-type-on-javascript
+var inputs = document.querySelectorAll("input[type=file]");
+Array.from(inputs,
+    input => {
+        input.addEventListener("change", handleInput, false);
+    }
+);
+
+// events 
+
 function dragenter(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -92,6 +114,15 @@ function handleInput(e) {
     loadSpreadsheet(files[0], left);
 }
 
+// stupid event cleanup code 
+
+function clearComparisonWindow() {
+    leftPreview.innerText = "";
+    rightPreview.innerText = "";
+}
+
+// ALGORITHM code
+
 function loadSpreadsheet(file, left) {
 
     var rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
@@ -122,8 +153,6 @@ function loadSpreadsheet(file, left) {
     else
         reader.readAsArrayBuffer(file);
 }
-
-
 
 function compare() {
     if (!leftWorkbook || !rightWorkbook) {
@@ -290,8 +319,6 @@ function compare() {
             because right 6/9 match better to left 7...
     */
 
-
-
     // // near perfect
     // for (var hash of testLeft.keys()) {
     //     if (testRight.has(hash)) {
@@ -363,47 +390,6 @@ function compare() {
     rightPreview.innerText = getOutput(testRight);
 }
 
-function getOutput(hilm) {
-    var output = '';
-    for (hash of hilm.keys()) {
-        for (index of hilm.get(hash).keys()) {
-            output += index + ' - ' + hilm.get(hash).get(index) + '\n';
-        }
-    }
-    return output;
-}
-
-function getString(map) {
-    var message = '';
-    for (var hash of map.keys()) {
-        var lf = map.get(hash);
-        message += lf.frequency + ' - ' + lf.line + '\n';
-    }
-    return message;
-}
-
-function clearComparisonWindow() {
-    leftPreview.innerText = "";
-    rightPreview.innerText = "";
-}
-
-function getHtml(workbook) {
-    sheets = workbook.SheetNames;
-    var sheet = workbook.Sheets[sheets[0]];
-    var html = XLSX.utils.sheet_to_html(sheet, { strip: true });
-    return html;
-}
-
-function getLines(workbook) {
-    var sheets = workbook.SheetNames;
-    var sheet = workbook.Sheets[sheets[0]];
-    var csv = XLSX.utils.sheet_to_csv(sheet/*, { strip: true, blankrows: false }*/);
-    var lines = csv.split('\n');
-    //        lines.pop(); // remove extra blank line
-
-    return lines;
-}
-
 // map of hash to line frequency objects
 function buildMapV3(workbook) {
     var lines = getLines(workbook);
@@ -411,7 +397,7 @@ function buildMapV3(workbook) {
     var hashToLineFrequency = new Map();
     for (var index in lines) {
         var line = lines[index];
-        var hash = hashCode(line);
+        var hash = hash(line);
 
         var lineFrequency = hashToLineFrequency.get(hash);
         if (lineFrequency === undefined) {
@@ -433,7 +419,7 @@ function buildMapV2(workbook) {
     var hashToIndexes = new Map();
     for (var index in lines) {
         var line = lines[index];
-        var hash = hashCode(line);
+        var hash = hash(line);
 
         var indexMap = hashToIndexes.get(hash);
         if (indexMap === undefined) {
@@ -444,6 +430,46 @@ function buildMapV2(workbook) {
     }
     return hashToIndexes;
 }
+
+// helper functions
+
+function getOutput(hilm) {
+    var output = '';
+    for (hash of hilm.keys()) {
+        for (index of hilm.get(hash).keys()) {
+            output += index + ' - ' + hilm.get(hash).get(index) + '\n';
+        }
+    }
+    return output;
+}
+
+function getString(map) {
+    var message = '';
+    for (var hash of map.keys()) {
+        var lf = map.get(hash);
+        message += lf.frequency + ' - ' + lf.line + '\n';
+    }
+    return message;
+}
+
+function getHtml(workbook) {
+    sheets = workbook.SheetNames;
+    var sheet = workbook.Sheets[sheets[0]];
+    var html = XLSX.utils.sheet_to_html(sheet, { strip: true });
+    return html;
+}
+
+function getLines(workbook) {
+    var sheets = workbook.SheetNames;
+    var sheet = workbook.Sheets[sheets[0]];
+    var csv = XLSX.utils.sheet_to_csv(sheet/*, { strip: true, blankrows: false }*/);
+    var lines = csv.split('\n');
+    //        lines.pop(); // remove extra blank line
+
+    return lines;
+}
+
+
 
 function getMessage(files) {
     var message = 'Loading...'
@@ -456,7 +482,9 @@ function getMessage(files) {
     return message;
 }
 
-function hashCode(string) {
+// hash algorithm
+
+function hash(string) {
     var hash = 0, i, chr;
     if (string.length === 0) return hash;
     for (i = 0; i < string.length; i++) {
@@ -467,20 +495,3 @@ function hashCode(string) {
     return hash;
 };
 
-// https://stackoverflow.com/questions/19655189/javascript-click-event-listener-on-class
-var dropzones = document.getElementsByClassName("dropzone");
-Array.from(dropzones,
-    dz => {
-        dz.addEventListener("dragenter", dragenter, false);
-        dz.addEventListener("dragover", dragover, false);
-        dz.addEventListener("drop", drop, false);
-    }
-);
-
-// https://stackoverflow.com/questions/5897122/accessing-elements-by-type-on-javascript
-var inputs = document.querySelectorAll("input[type=file]");
-Array.from(inputs,
-    input => {
-        input.addEventListener("change", handleInput, false);
-    }
-);

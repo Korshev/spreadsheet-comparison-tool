@@ -1,7 +1,14 @@
 <!-- 
+    IMPROVE USABILITY
+    TODO: ability to drag and drop (or select) two files at once
+    
     IMPROVE DISPLAY
     TODO: better way to display lines that did not have an exact match
+    TODO: Loading bar for large files -> Resumable.js
         
+    IMPROVE MEMORY
+    TODO: seems like it blows up on large files - about 13 mb CSVs (large?)
+
     IMPROVE MATCHING ALGORTIHM
     TODO: consider using sheet_to_json (to get a 2D array)
     TODO: cleanup loading code (raw preview)
