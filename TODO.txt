@@ -26,4 +26,5 @@
             -> improve the error message and we probably shouldn't use an alert
     TODO: if displayRaw is unchecked, raw output will not be replaced when a new file is loaded
     TODO: near perfect vs duplicates, one of the 70's didn't match up -- need to rematch left side if the left is not the right side's best match
+
 -->
