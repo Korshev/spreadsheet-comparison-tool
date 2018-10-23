@@ -8,6 +8,8 @@
         
     IMPROVE MEMORY
     TODO: seems like it blows up on large files - about 13 mb CSVs (large?)
+    TODO: use webworkers to load files 'in parallel'? these copy data so maybe load the files on
+            the web worker and just send back the maps
 
     IMPROVE MATCHING ALGORTIHM
     TODO: consider using sheet_to_json (to get a 2D array)
