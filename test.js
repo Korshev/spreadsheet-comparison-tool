@@ -27,7 +27,7 @@ function read(file) {
         reader.onload = (e) => {
             var data = new Uint8Array(e.target.result); //BIG
             console.log("get workbook: " + performance.now());
-            var workbook = XLSX.read(data, { type: 'array', raw: true }); //BIG
+            var workbook = XLSX.read(data, { type: 'array'}); //BIG
             console.log("got workbook: " + performance.now());
 
             /* DO SOMETHING WITH workbook HERE */
