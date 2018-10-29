@@ -1,32 +1,15 @@
 <!-- 
-    IMPROVE USABILITY
-    TODO: ability to drag and drop (or select) two files at once
-    
-    IMPROVE DISPLAY
-    TODO: better way to display lines that did not have an exact match
-    TODO: Loading bar for large files -> Resumable.js
-        
+       
     IMPROVE MEMORY
     TODO: seems like it blows up on large files - about 13 mb CSVs (large?)
-    TODO: use webworkers to load files 'in parallel'? these copy data so maybe load the files on
-            the web worker and just send back the maps
+    TODO: use webworkers to load files in the background? these should just send back the maps
+    TODO: Loading bar for large files -> Resumable.js
 
-    IMPROVE MATCHING ALGORTIHM
-    TODO: consider using sheet_to_json (to get a 2D array)
-    TODO: cleanup loading code (raw preview)
-    TODO: for lines that do not have an exact match we should match them by best partial match
-    TODO: compare all sheets (for now assume sheets are in same order)
-    TODO: show matches (perfect, near perfect, best, near best)
+    IMPROVE MATCHING
+    TODO: better way to display lines that did not have an exact match
+    TODO: rethink the data structure for matching hashes exactly and rows partially - separate?
 
     HASHING ALGORTIHM
-    TODO: might need a bettter hash function (murmur3?)  
-
-    BUGS
-    TODO: input file button on cancel clears currently selected file - I added code that ignores that but that means we have no way to deselect something
-    TODO: if we do not have two files selected either 
-            -> the compare button should not be clickable (w/tooltip explanation) or
-            -> improve the error message and we probably shouldn't use an alert
-    TODO: if displayRaw is unchecked, raw output will not be replaced when a new file is loaded
-    TODO: near perfect vs duplicates, one of the 70's didn't match up -- need to rematch left side if the left is not the right side's best match
+    TODO: might need a bettter/faster hash function (murmur3?)  
 
 -->

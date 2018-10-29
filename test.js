@@ -25,9 +25,11 @@ function read(file) {
         };
 
         reader.onload = (e) => {
+            console.log("get data: " + performance.now());
             var data = new Uint8Array(e.target.result); //BIG
+            console.log("got data: " + performance.now());
             console.log("get workbook: " + performance.now());
-            var workbook = XLSX.read(data, { type: 'array'}); //BIG
+            var workbook = XLSX.read(data, { type: 'array' }); //BIG
             console.log("got workbook: " + performance.now());
 
             /* DO SOMETHING WITH workbook HERE */
@@ -80,7 +82,79 @@ function compare(leftMap, rightMap) {
         alert("The two files are equal");
     } else {
         alert("There are " + leftMap.size + " unmatchable rows in the first file and " + rightMap.size + " unmatchable rows in the second file");
+        if (confirm("Attempt to match leftovers?")) {
+            matchedPairs = sortLeftovers(leftMap, rightMap);
+            var message = "";
+            matchedPairs.forEach(function (item) {
+                message += "\n Left Index: " + item.leftIndex + ", Right Index: " + item.rightIndex + ", Similarity Count: " + item.similarityCount;
+            })
+            alert("The following lines were matched together: " + message);
+        }
     }
+};
+
+function sortLeftovers(leftMap, rightMap) {
+    var matchedPairs = [];
+
+    leftMap.forEach(function (leftEntry, hash) {
+        var rightMatch = findBestMatch(leftEntry, rightMap);
+        var leftMatch = findBestMatch(rightMatch.match, leftMap);
+        console.log(rightMatch);
+        console.log(leftMatch);
+        console.log(leftEntry === leftMatch);
+
+        if (leftEntry && leftMatch && leftEntry === leftMatch.match) {
+
+            matchedPairs.push({
+                leftIndex: leftMatch.match.index.pop(),
+                rightIndex: rightMatch.match.index.pop(),
+                similarityCount: leftMatch.similarityCount
+            });
+
+            if (leftMatch.match.index.length <= 0) {
+                leftMap.delete(hash);
+            }
+
+            if (rightMatch.match.index.length <= 0) {
+                rightMap.delete(hash);
+            }
+        }
+    });
+
+    return matchedPairs;
+};
+function findBestMatch(targetEntry, rightMap) {
+    if (targetEntry === null) {
+        return null;
+    }
+    var max = 0;
+    var bestMatch = null;
+    for (var hash of rightMap.keys()) {
+        var rightEntry = rightMap.get(hash);
+        var currentRow = rightEntry.row;
+        var similarityCount = getSimilarity(targetEntry.row, currentRow);
+        if (similarityCount > max) {
+            max = similarityCount;
+            bestMatch = rightEntry;
+        }
+    };
+    console.log(targetEntry);
+    console.log(bestMatch);
+    console.log(max);
+    return {
+        match: bestMatch,
+        similarityCount: max
+    };
+}
+
+function getSimilarity(target, current) {
+    var similarityCount = 0;
+    for (var i = 0; i < target.length && i < current.length; ++i) {
+        if (current[i] === target[i]) {
+            ++similarityCount;
+        }
+    }
+    return similarityCount;
 };
 
 function getMap(json) {
