@@ -49,6 +49,10 @@ function read(file) {
     });
 };
 
+function handleHtml(files){
+    console.log(files);
+};
+
 function compare(leftMap, rightMap) {
     console.log("start compare" + performance.now());
 
@@ -178,6 +182,7 @@ function hashRow(array) {
 
 // hash algorithm
 function hashString(row) {
+    row = row.trim();
     var hash = 0, i, char;
     if (row.length === 0) return hash;
     for (i = 0; i < row.length; ++i) {
