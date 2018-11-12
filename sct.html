@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Spreadsheet Comparison Tool</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="sct.css">
+
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row">
+            <div class="col">
+                <h1>Spreadsheet Comparison Tool</h1>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col">
+                <div class="dropzone">
+                    Drag and drop one or two files here...
+                </div>
+                <input id="left" type="file" multiple accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+            </div>
+
+            <div class="col">
+                <div class="dropzone">
+                    Drag and drop one or two files here...
+                </div>
+                <input id="right" type="file" multiple accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <button onclick="compare()">Compare</button>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+<script src="sct.js"></script>
+
+</html>

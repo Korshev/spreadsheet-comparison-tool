@@ -1,11 +1,3 @@
-div .row {
-    margin-top: 1.5rem!important
-}
-
-div .col {
-    text-align: center
-}
-
 /* layout.css Style */
 .dropzone {
     height: 200px;
@@ -26,4 +18,15 @@ div .col {
     color: #222;
     border-color: #222;
     border-style: solid;
+}
+
+/* debugging */
+div .debugging {
+    border-width: 1px;
+    border-style: solid;
+    padding: 10px;
+}
+
+table td {
+    border: 1px solid;
 }

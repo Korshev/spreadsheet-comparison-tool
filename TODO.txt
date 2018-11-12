@@ -12,4 +12,7 @@
     HASHING ALGORTIHM
     TODO: might need a bettter/faster hash function (murmur3?)  
 
+    FEATURE
+    TODO: Download the differences (order by best match) so that they can be compared with the excel compare tool
+
 -->
