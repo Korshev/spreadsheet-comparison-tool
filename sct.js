@@ -77,11 +77,15 @@ function inputChange(e) {
 
 // compare
 function compare(){
+    
+
     var leftFile = document.getElementById('left').files[0];
     var rightFile = document.getElementById('right').files[0];
 
     if (leftFile && rightFile){
         alert("Comparing...");
+        post(leftFile);
+        post(rightFile);
     } else {
         alert("Please select two files to compare!")
     }
