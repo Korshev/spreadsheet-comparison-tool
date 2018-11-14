@@ -1,19 +1,6 @@
 /**
  * This JavaScript file should only handle html events. 
  * The actual comparison should happen elsewhere.
- * 
- *      TODO:   Compare - Make sure we have 2 files
- *              Calls other code that prepares maps from files using xlsx
- *              Then calls compare algorithm code
- *      TODO:   Autodownload matched diffs when done so that they can be comapred with excel compare tool
- *      
- *      TODO:   DND - verify correct file type? 
- *      TODO:   If you make changes to a file you can't reload it w/o canceling or loading another file first
- *              Is this an issue if we don't load the file until compare time? or do we have a date version of the file?
- *      TODO:   Progress bars
- *      TODO:   Way to display diffs (not just download and diff with other tool)
- *      TODO:   Narrated console output
- *      TODO:   Timer wrapper pass a function to it and it times it (output to narrated console)
  */
 
 // drag and drop
@@ -68,7 +55,9 @@ function inputChange(e) {
 
     var file = this.files[0];
     var dropzone = e.target.previousElementSibling;
-    dropzone.innerText = (file) ? file.name + ' (' + file.size + ' bytes)' : 'Drag and drop one or two files here...';
+    dropzone.innerText = (file) 
+        ? file.name + ' (' + file.size + ' bytes)' 
+        : 'Drag and drop one or two files here...';
     dropzone.classList.add("drop");
     if (!file) {
         dropzone.classList.remove("drop");
@@ -76,16 +65,12 @@ function inputChange(e) {
 }
 
 // compare
-function compare(){
-    
-
+function clickCompare(){
     var leftFile = document.getElementById('left').files[0];
     var rightFile = document.getElementById('right').files[0];
 
     if (leftFile && rightFile){
-        alert("Comparing...");
-        post(leftFile);
-        post(rightFile);
+        doTheThing(leftFile, rightFile);
     } else {
         alert("Please select two files to compare!")
     }

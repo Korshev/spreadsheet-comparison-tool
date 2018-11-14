@@ -1,3 +1,5 @@
+// DEPRECATED
+
 var leftFiles;
 var rightFiles;
 

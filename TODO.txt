@@ -1,18 +1,19 @@
 <!-- 
-       
-    IMPROVE MEMORY
-    TODO: seems like it blows up on large files - about 13 mb CSVs (large?)
-    TODO: use webworkers to load files in the background? these should just send back the maps
-    TODO: Loading bar for large files -> Resumable.js
+    FEATURE
+    TODO: Autodownload matched diffs when done so that they can be comapred with excel compare tool
+
+    FEEDBACK
+    TODO: Progress bars, narrated console ouput, timed methods, etc...
 
     IMPROVE MATCHING
-    TODO: better way to display lines that did not have an exact match
+    TODO: Way to display diffs (not just download and diff with other tool)
     TODO: rethink the data structure for matching hashes exactly and rows partially - separate?
 
     HASHING ALGORTIHM
     TODO: might need a bettter/faster hash function (murmur3?)  
 
-    FEATURE
-    TODO: Download the differences (order by best match) so that they can be compared with the excel compare tool
-
+    MISCELLANEOUS
+    TODO: drag and drop isn't locked down to spreadsheets...
+    TODO: throw comparison.js into it's own web worker so it can run in the background
+    TODO: add interrupts to the workers to kill long running processes
 -->

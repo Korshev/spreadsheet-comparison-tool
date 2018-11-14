@@ -1,62 +1,28 @@
-// DEPRECATED
-
-// handle file upload
-async function handleFiles(files) {
-    if (files.length !== 2) {
-        alert("Please select 2 files to compare.");
-        return;
-    }
-    console.log("start leftMap: " + performance.now());
-    var leftMap = await read(files[0]);  //BIG
-    console.log("leftMap finished" + performance.now());
-    console.log("start rightMap" + performance.now());
-    var rightMap = await read(files[1]);  //BIG
-    console.log("rightMap finished" + performance.now());
-
+function pullTheLever(leftJson, rightJson) {
+    var leftMap = getMap(leftJson);
+    var rightMap = getMap(rightJson);
     compare(leftMap, rightMap);
-};
+}
 
-function read(file) {
-    var reader = new FileReader();
+function getMap(json) {
+    var map = new Map();
 
-    // https://blog.shovonhasan.com/using-promises-with-filereader/
-    return new Promise((resolve, reject) => {
-        reader.onerror = () => {
-            reader.abort();
-            reject(new DOMException("Error parsing file!"));
-        };
-
-        reader.onload = (e) => {
-            console.log("get data: " + performance.now());
-            var data = new Uint8Array(e.target.result); //BIG
-            console.log("got data: " + performance.now());
-            console.log("get workbook: " + performance.now());
-            var workbook = XLSX.read(data, { type: 'array' }); //BIG
-            console.log("got workbook: " + performance.now());
-
-            /* DO SOMETHING WITH workbook HERE */
-            var sheets = workbook.SheetNames;
-            var sheet = workbook.Sheets[sheets[0]]; //BIG
-            console.log("get json: " + performance.now());
-            var json = XLSX.utils.sheet_to_json(sheet, { header: 1 }); //BIG
-            console.log("got json: " + performance.now());
-            // console.log(json);
-            console.log("get map: " + performance.now());
-            var map = getMap(json); //BIG
-            console.log("got map: " + performance.now());
-            resolve(map);
-        };
-
-        reader.readAsArrayBuffer(file);
+    json.forEach(function (row, index) {
+        var hash = hashRow(row);
+        if (map.has(hash)) {
+            map.get(hash).index.push(index);
+        } else {
+            map.set(hash, { row: row, index: [index] });
+        }
     });
-};
 
-function handleHtml(files){
-    console.log(files);
+    return map;
 };
 
 function compare(leftMap, rightMap) {
-    console.log("start compare" + performance.now());
+    console.log('--- raw maps BEFORE comparing ---')
+    console.log(leftMap);
+    console.log(rightMap);
 
     leftMap.forEach(function (leftEntry, hash) {
         var row = leftEntry.row;
@@ -79,8 +45,7 @@ function compare(leftMap, rightMap) {
         }
     });
 
-    console.log("compare finished" + performance.now());
-
+    console.log('--- raw maps AFTER comparing ---')
     console.log(leftMap);
     console.log(rightMap);
 
@@ -95,6 +60,7 @@ function compare(leftMap, rightMap) {
                 message += "\n Left Index: " + item.leftIndex + ", Right Index: " + item.rightIndex + ", Similarity Count: " + item.similarityCount;
             })
             alert("The following lines were matched together: " + message);
+            console.log(message);
         }
     }
 };
@@ -105,12 +71,8 @@ function sortLeftovers(leftMap, rightMap) {
     leftMap.forEach(function (leftEntry, hash) {
         var rightMatch = findBestMatch(leftEntry, rightMap);
         var leftMatch = findBestMatch(rightMatch.match, leftMap);
-        console.log(rightMatch);
-        console.log(leftMatch);
-        console.log(leftEntry === leftMatch);
 
         if (leftEntry && leftMatch && leftEntry === leftMatch.match) {
-
             matchedPairs.push({
                 leftIndex: leftMatch.match.index.pop(),
                 rightIndex: rightMatch.match.index.pop(),
@@ -129,6 +91,7 @@ function sortLeftovers(leftMap, rightMap) {
 
     return matchedPairs;
 };
+
 function findBestMatch(targetEntry, rightMap) {
     if (targetEntry === null) {
         return null;
@@ -144,9 +107,6 @@ function findBestMatch(targetEntry, rightMap) {
             bestMatch = rightEntry;
         }
     };
-    console.log(targetEntry);
-    console.log(bestMatch);
-    console.log(max);
     return {
         match: bestMatch,
         similarityCount: max
@@ -161,21 +121,6 @@ function getSimilarity(target, current) {
         }
     }
     return similarityCount;
-};
-
-function getMap(json) {
-    var map = new Map();
-
-    json.forEach(function (row, index) {
-        var hash = hashRow(row);
-        if (map.has(hash)) {
-            map.get(hash).index.push(index);
-        } else {
-            map.set(hash, { row: row, index: [index] });
-        }
-    });
-
-    return map;
 };
 
 function hashRow(array) {
