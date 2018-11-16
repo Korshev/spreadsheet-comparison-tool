@@ -54,6 +54,7 @@ function compare(leftMap, rightMap) {
     } else {
         alert("There are " + leftMap.size + " unmatchable rows in the first file and " + rightMap.size + " unmatchable rows in the second file");
         if (confirm("Attempt to match leftovers?")) {
+            // newThings = sortLeftoversV2(leftMap, rightMap);
             matchedPairs = sortLeftovers(leftMap, rightMap);
             var message = "";
             matchedPairs.forEach(function (item) {
@@ -70,74 +71,111 @@ function sortLeftoversV2(leftMap, rightMap) {
     var leftAOA = [];
     var rightAOA = [];
 
-    // map of hash to object, object of index array and raw row array
+    // keep looping over all remaining hashes as long as we keep finding best matches
+    var foundAtLeastOneMatch = true;
+    while (leftMap.size > 0 && rightMap.size > 0 && foundAtLeastOneMatch) {
+        foundAtLeastOneMatch = false;
 
-    for (var leftHash of leftMap.keys()) {
-        var leftEntry = leftMap.get(leftHash);
-        var leftRow = leftEntry.row;
+        // map of hash to object, object of index array and raw row array
+        for (var leftHash of leftMap.keys()) {
+            var leftEntry = leftMap.get(leftHash);
+            var leftRow = leftEntry.row;
 
-        var bestMatchRowFromRight = null;
-        var bestMatchScoreFromRight = 0;
-        var bestRightHash = null;
-        for (var rightHash of rightMap.keys()) {
-            var rightEntry = rightMap.get(rightHash);
-            var rightRow = rightEntry.row;
+            // keep looping over remaining indexes in the current hash as long as we keep finding best matches
+            var success = true;
+            while (leftEntry.index.length > 0 && success) {
+                success = false;
 
-            var rightMatchScore = 0;
-            for (var index in leftRow) { //TODO: what happens when left and right row are different lengths?
-                rightMatchScore += leftRow[index] === rightRow[index];
+                var bestMatchRowFromRight = null;
+                var bestMatchScoreFromRight = 0;
+                var bestRightHash = null;
+                for (var rightHash of rightMap.keys()) {
+                    var rightEntry = rightMap.get(rightHash);
+                    var rightRow = rightEntry.row;
+
+                    var rightMatchScore = 0;
+                    for (var index in leftRow) { //TODO: what happens when left and right row are different lengths?
+                        rightMatchScore += leftRow[index] === rightRow[index];
+                    }
+                    if (rightMatchScore > bestMatchScoreFromRight) {
+                        bestMatchScoreFromRight = rightMatchScore;
+                        bestMatchRowFromRight = rightRow;
+                        bestRightHash = rightHash;
+                    }
+                }
+
+                // bestMatchRow is the row from the rightMap that best matches the current row from the left map
+                // we need to make sure the current left row is the best match for this right row
+                var bestMatchRowFromLeft = null;
+                var bestMatchScoreFromLeft = 0;
+                for (var reLeftHash of leftMap.keys()) {
+                    var reLeftEntry = leftMap.get(reLeftHash);
+                    var reLeftRow = reLeftEntry.row;
+
+                    var leftMatchScore = 0;
+                    for (var reIndex in bestMatchRowFromRight) {
+                        leftMatchScore += bestMatchRowFromRight[reIndex] === reLeftRow[reIndex];
+                    }
+                    if (leftMatchScore > bestMatchScoreFromLeft) {
+                        bestMatchScoreFromLeft = leftMatchScore;
+                        bestMatchRowFromLeft = reLeftRow;
+                    }
+                }
+                // console.log(leftRow + " ---> " + bestMatchRowFromRight + " ---> " + bestMatchScoreFromRight);
+                // console.log(bestMatchRowFromRight + " ---> " + bestMatchRowFromLeft + " ---> " + bestMatchScoreFromLeft);
+                // console.log(leftRow === bestMatchRowFromLeft); //TODO: should the scores match?
+
+                if (leftRow === bestMatchRowFromLeft) {
+                    success = true;
+                    foundAtLeastOneMatch = true;
+
+                    var rightHash = bestRightHash;
+                    var rightEntry = rightMap.get(bestRightHash)
+
+                    var numberOfMatches = (leftEntry.index.length > rightEntry.index.length)
+                        ? rightEntry.index.length
+                        : leftEntry.index.length;
+
+                    // push matches together (equal to number of matches)
+                    for (var i = 0; i < numberOfMatches; ++i) {
+                        leftAOA.push(leftRow);
+                        rightAOA.push(bestMatchRowFromRight);
+                    }
+
+                    // slice off as many matches as we can
+                    leftEntry.index = leftEntry.index.slice(numberOfMatches);
+                    rightEntry.index = rightEntry.index.slice(numberOfMatches);
+
+                    // remove if reduced to zero (at least one should be)
+                    if (leftEntry.index.length <= 0) {
+                        leftMap.delete(leftHash);
+                    }
+                    if (rightEntry.index.length <= 0) {
+                        rightMap.delete(rightHash);
+                    }
+                }
             }
-            if (rightMatchScore > bestMatchScoreFromRight) {
-                bestMatchScoreFromRight = rightMatchScore;
-                bestMatchRowFromRight = rightRow;
-                bestRightHash = rightHash;
-            }
-        }
-
-        // bestMatchRow is the row from the rightMap that best matches the current row from the left map
-        // we need to make sure the current left row is the best match for this right row
-        var bestMatchRowFromLeft = null;
-        var bestMatchScoreFromLeft = 0;
-        for (var reLeftHash of leftMap.keys()) {
-            var reLeftEntry = leftMap.get(reLeftHash);
-            var reLeftRow = reLeftEntry.row;
-
-            var leftMatchScore = 0;
-            for (var reIndex in bestMatchRowFromRight) {
-                leftMatchScore += bestMatchRowFromRight[reIndex] === reLeftRow[reIndex];
-            }
-            if (leftMatchScore > bestMatchScoreFromLeft) {
-                bestMatchScoreFromLeft = leftMatchScore;
-                bestMatchRowFromLeft = reLeftRow;
-            }
-        }
-        console.log(leftRow + " ---> " + bestMatchRowFromRight + " ---> " + bestMatchScoreFromRight);
-        console.log(bestMatchRowFromRight + " ---> " + bestMatchRowFromLeft + " ---> " + bestMatchScoreFromLeft);
-        console.log(leftRow === bestMatchRowFromLeft); //TODO: should the scores match?
-
-        if (leftRow === bestMatchRowFromLeft) {
-            leftAOA.push(leftRow);
-            rightAOA.push(rightRow);
-
-            var rightHash = bestRightHash;
-            var rightEntry = rightMap.get(bestRightHash)
-
-            // pop an index from each
-            // TODO: actually pop up to the smaller of left/right index.length
-            leftEntry.index.pop();
-            rightEntry.index.pop();
-
-            // remove if reduced to zero
-            if (leftEntry.index.length <= 0) {
-                leftMap.delete(leftHash);
-            }
-            if (rightEntry.index.length <= 0) {
-                rightMap.delete(rightHash);
-            }
-            // TODO: repeat if there's still an index in left
         }
     }
-    return {leftAOA: leftAOA, rgihtAOA: rightAOA};
+
+    // push any unmatched left overs
+    for (var hash of leftMap.keys()) {
+        var entry = leftMap.get(hash);
+        for (var index in entry.index) {
+            leftAOA.push(entry.row);
+        }
+    }
+
+    for (var hash of rightMap.keys()) {
+        var entry = rightMap.get(hash);
+        for (var index in entry.index) {
+            rightAOA.push(entry.row);
+        }
+    }
+
+    console.log(leftMap);
+    console.log(rightMap);
+    return { leftAOA: leftAOA, rightAOA: rightAOA };
 };
 
 function sortLeftovers(leftMap, rightMap) {
