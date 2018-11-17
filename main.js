@@ -6,11 +6,7 @@
 async function doTheThing(leftFile, rightFile) {
     //https://stackoverflow.com/questions/35612428/call-async-await-functions-in-parallel
     [leftJson, rightJson] = await Promise.all([getJson(leftFile), getJson(rightFile)]);
-    console.clear()
-    console.log('--- raw json ---')
-    console.log(leftJson);
-    console.log(rightJson);
-    pullTheLever(leftJson,rightJson);
+    compare(leftJson,rightJson);
 }
 
 function getJson(file) {

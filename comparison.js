@@ -1,238 +1,16 @@
-function pullTheLever(leftJson, rightJson) {
-    var leftMap = getMap(leftJson);
-    var rightMap = getMap(rightJson);
-    compare(leftMap, rightMap);
-}
-
 function getMap(json) {
     var map = new Map();
 
     json.forEach(function (row, index) {
         var hash = hashRow(row);
         if (map.has(hash)) {
-            map.get(hash).index.push(index);
+            map.get(hash).indexes.push(index);
         } else {
-            map.set(hash, { row: row, index: [index] });
+            map.set(hash, { hash: hash, row: row, indexes: [index] });
         }
     });
 
     return map;
-};
-
-function compare(leftMap, rightMap) {
-    console.log('--- raw maps BEFORE comparing ---')
-    console.log(leftMap);
-    console.log(rightMap);
-
-    leftMap.forEach(function (leftEntry, hash) {
-        var row = leftEntry.row;
-        var indexes = leftEntry.index;
-        if (rightMap.has(hash)) {
-            var rightEntry = rightMap.get(hash);
-
-            if (leftEntry.index.length === rightEntry.index.length) {
-                leftMap.delete(hash);
-                rightMap.delete(hash);
-            } else if (leftEntry.index.length > rightEntry.index.length) {
-                leftEntry.index = leftEntry.index.slice(0, -rightEntry.index.length);
-                rightMap.delete(hash);
-            } else if (leftEntry.index.length < rightEntry.index.length) {
-                rightEntry.index = rightEntry.index.slice(0, -leftEntry.index.length);
-                leftMap.delete(hash);
-            } else {
-                return new DOMException("Run Screaming!");
-            }
-        }
-    });
-
-    console.log('--- raw maps AFTER comparing ---')
-    console.log(leftMap);
-    console.log(rightMap);
-
-    if (leftMap.size === 0 && rightMap.size === 0) {
-        alert("The two files are equal");
-    } else {
-        alert("There are " + leftMap.size + " unmatchable rows in the first file and " + rightMap.size + " unmatchable rows in the second file");
-        if (confirm("Attempt to match leftovers?")) {
-            // newThings = sortLeftoversV2(leftMap, rightMap);
-            matchedPairs = sortLeftovers(leftMap, rightMap);
-            var message = "";
-            matchedPairs.forEach(function (item) {
-                message += "\n Left Index: " + item.leftIndex + ", Right Index: " + item.rightIndex + ", Similarity Count: " + item.similarityCount;
-            })
-            alert("The following lines were matched together: " + message);
-            console.log(message);
-        }
-    }
-};
-
-function sortLeftoversV2(leftMap, rightMap) {
-
-    var leftAOA = [];
-    var rightAOA = [];
-
-    // keep looping over all remaining hashes as long as we keep finding best matches
-    var foundAtLeastOneMatch = true;
-    while (leftMap.size > 0 && rightMap.size > 0 && foundAtLeastOneMatch) {
-        foundAtLeastOneMatch = false;
-
-        // map of hash to object, object of index array and raw row array
-        for (var leftHash of leftMap.keys()) {
-            var leftEntry = leftMap.get(leftHash);
-            var leftRow = leftEntry.row;
-
-            // keep looping over remaining indexes in the current hash as long as we keep finding best matches
-            var success = true;
-            while (leftEntry.index.length > 0 && success) {
-                success = false;
-
-                var bestMatchRowFromRight = null;
-                var bestMatchScoreFromRight = 0;
-                var bestRightHash = null;
-                for (var rightHash of rightMap.keys()) {
-                    var rightEntry = rightMap.get(rightHash);
-                    var rightRow = rightEntry.row;
-
-                    var rightMatchScore = 0;
-                    for (var index in leftRow) { //TODO: what happens when left and right row are different lengths?
-                        rightMatchScore += leftRow[index] === rightRow[index];
-                    }
-                    if (rightMatchScore > bestMatchScoreFromRight) {
-                        bestMatchScoreFromRight = rightMatchScore;
-                        bestMatchRowFromRight = rightRow;
-                        bestRightHash = rightHash;
-                    }
-                }
-
-                // bestMatchRow is the row from the rightMap that best matches the current row from the left map
-                // we need to make sure the current left row is the best match for this right row
-                var bestMatchRowFromLeft = null;
-                var bestMatchScoreFromLeft = 0;
-                for (var reLeftHash of leftMap.keys()) {
-                    var reLeftEntry = leftMap.get(reLeftHash);
-                    var reLeftRow = reLeftEntry.row;
-
-                    var leftMatchScore = 0;
-                    for (var reIndex in bestMatchRowFromRight) {
-                        leftMatchScore += bestMatchRowFromRight[reIndex] === reLeftRow[reIndex];
-                    }
-                    if (leftMatchScore > bestMatchScoreFromLeft) {
-                        bestMatchScoreFromLeft = leftMatchScore;
-                        bestMatchRowFromLeft = reLeftRow;
-                    }
-                }
-                // console.log(leftRow + " ---> " + bestMatchRowFromRight + " ---> " + bestMatchScoreFromRight);
-                // console.log(bestMatchRowFromRight + " ---> " + bestMatchRowFromLeft + " ---> " + bestMatchScoreFromLeft);
-                // console.log(leftRow === bestMatchRowFromLeft); //TODO: should the scores match?
-
-                if (leftRow === bestMatchRowFromLeft) {
-                    success = true;
-                    foundAtLeastOneMatch = true;
-
-                    var rightHash = bestRightHash;
-                    var rightEntry = rightMap.get(bestRightHash)
-
-                    var numberOfMatches = (leftEntry.index.length > rightEntry.index.length)
-                        ? rightEntry.index.length
-                        : leftEntry.index.length;
-
-                    // push matches together (equal to number of matches)
-                    for (var i = 0; i < numberOfMatches; ++i) {
-                        leftAOA.push(leftRow);
-                        rightAOA.push(bestMatchRowFromRight);
-                    }
-
-                    // slice off as many matches as we can
-                    leftEntry.index = leftEntry.index.slice(numberOfMatches);
-                    rightEntry.index = rightEntry.index.slice(numberOfMatches);
-
-                    // remove if reduced to zero (at least one should be)
-                    if (leftEntry.index.length <= 0) {
-                        leftMap.delete(leftHash);
-                    }
-                    if (rightEntry.index.length <= 0) {
-                        rightMap.delete(rightHash);
-                    }
-                }
-            }
-        }
-    }
-
-    // push any unmatched left overs
-    for (var hash of leftMap.keys()) {
-        var entry = leftMap.get(hash);
-        for (var index in entry.index) {
-            leftAOA.push(entry.row);
-        }
-    }
-
-    for (var hash of rightMap.keys()) {
-        var entry = rightMap.get(hash);
-        for (var index in entry.index) {
-            rightAOA.push(entry.row);
-        }
-    }
-
-    console.log(leftMap);
-    console.log(rightMap);
-    return { leftAOA: leftAOA, rightAOA: rightAOA };
-};
-
-function sortLeftovers(leftMap, rightMap) {
-    var matchedPairs = [];
-    leftMap.forEach(function (leftEntry, hash) {
-        var rightMatch = findBestMatch(leftEntry, rightMap);
-        var leftMatch = findBestMatch(rightMatch.match, leftMap);
-
-        if (leftEntry && leftMatch && leftEntry === leftMatch.match) {
-            matchedPairs.push({
-                leftIndex: leftMatch.match.index.pop(),
-                rightIndex: rightMatch.match.index.pop(),
-                similarityCount: leftMatch.similarityCount
-            });
-
-            if (leftMatch.match.index.length <= 0) {
-                leftMap.delete(hash);
-            }
-
-            if (rightMatch.match.index.length <= 0) {
-                rightMap.delete(hash);
-            }
-        }
-    });
-
-    return matchedPairs;
-};
-
-function findBestMatch(targetEntry, rightMap) {
-    if (targetEntry === null) {
-        return null;
-    }
-    var max = 0;
-    var bestMatch = null;
-    for (var hash of rightMap.keys()) {
-        var rightEntry = rightMap.get(hash);
-        var currentRow = rightEntry.row;
-        var similarityCount = getSimilarity(targetEntry.row, currentRow);
-        if (similarityCount > max) {
-            max = similarityCount;
-            bestMatch = rightEntry;
-        }
-    };
-    return {
-        match: bestMatch,
-        similarityCount: max
-    };
-}
-
-function getSimilarity(target, current) {
-    var similarityCount = 0;
-    for (var i = 0; i < target.length && i < current.length; ++i) {
-        if (current[i] === target[i]) {
-            ++similarityCount;
-        }
-    }
-    return similarityCount;
 };
 
 function hashRow(array) {
@@ -242,12 +20,171 @@ function hashRow(array) {
 // hash algorithm
 function hashString(row) {
     row = row.trim();
+    if (row.length === 0) {
+        return hash;
+    }
+
     var hash = 0, i, char;
-    if (row.length === 0) return hash;
     for (i = 0; i < row.length; ++i) {
         char = row.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
         hash |= 0; // Convert to 32bit integer
     }
     return hash;
+};
+
+// TODO: rewrite this
+function compare(leftJson, rightJson) {
+    console.clear()
+    console.log('--- raw AOAs  ---')
+    console.log(leftJson);
+    console.log(rightJson);
+
+    var leftMap = getMap(leftJson);
+    var rightMap = getMap(rightJson);
+
+    console.log('--- raw maps BEFORE comparing HASHES ---')
+    console.log(leftMap);
+    console.log(rightMap);
+
+    leftMap.forEach(function (leftEntry, hash) {
+        if (rightMap.has(hash)) {
+            var rightEntry = rightMap.get(hash);
+
+            if (leftEntry.indexes.length === rightEntry.indexes.length) {
+                leftMap.delete(hash);
+                rightMap.delete(hash);
+            } else if (leftEntry.indexes.length > rightEntry.indexes.length) {
+                leftEntry.indexes = leftEntry.indexes.slice(0, -rightEntry.indexes.length);
+                rightMap.delete(hash);
+            } else if (leftEntry.indexes.length < rightEntry.indexes.length) {
+                rightEntry.indexes = rightEntry.indexes.slice(0, -leftEntry.indexes.length);
+                leftMap.delete(hash);
+            } else {
+                return new DOMException("Run Screaming!");
+            }
+        }
+    });
+
+    console.log('--- raw maps AFTER comparing HASHES ---')
+    console.log(leftMap);
+    console.log(rightMap);
+
+    if (leftMap.size === 0 && rightMap.size === 0) {
+        alert("The two files are equal");
+    } else {
+        var AOAs = sortLeftoversV2(leftMap, rightMap);
+        console.log('--- raw AOAs AFTER comparing ROWS ---')
+        console.log(AOAs.leftAOA);
+        console.log(AOAs.rightAOA);
+        var message = buildMessage(leftJson, rightJson, AOAs.leftAOA, AOAs.rightAOA);
+        alert(message);
+        console.log(message);
+    }
+};
+
+//TODO: get rid of this
+function buildMessage(leftJson, rightJson, leftAOA, rightAOA) {
+    var message = "There were " + leftAOA.length + " rows (of "+leftJson.length+") in the left file and " 
+    + rightAOA.length + " rows (of "+rightJson.length+") in the right file that could not be perfectly matched. They were matched like this: \n"
+
+    var max = (leftAOA.length > rightAOA.length) ? leftAOA.length : rightAOA.length;
+    for (var index = 0; index < max; ++index) {
+        message += "\n" + leftAOA[index] + " --- " + rightAOA[index];
+    }
+    return message;
+}
+
+function getMatchScore(leftRow, rightRow) {
+    var score = 0;
+    for (var index in leftRow) {
+        score += leftRow[index] === rightRow[index];
+    }
+    return score;
+}
+
+function findBestMatchV2(targetRow, map) {
+    var bestMatchScore = 0;
+    var bestMatchEntry = {};
+    for (var hash of map.keys()) {
+        var entry = map.get(hash);
+        var matchScore = getMatchScore(targetRow, entry.row);
+        if (matchScore > bestMatchScore) {
+            bestMatchScore = matchScore;
+            bestMatchEntry = entry;
+        }
+    }
+    // console.log(targetRow, bestMatchEntry, bestMatchScore)
+    return bestMatchEntry;
+}
+
+function pushLeftovers(map, aoa) {
+    for (var hash of map.keys()) {
+        var entry = map.get(hash);
+        for (var index in entry.indexes) {
+            aoa.push(entry.row);
+        }
+    }
+}
+
+function sortLeftoversV2(leftMap, rightMap) {
+
+    var leftAOA = [];
+    var rightAOA = [];
+
+    // keep looping over all remaining hashes as long as we keep finding best matches
+    var foundAtLeastOneMatchForAnyRow = true;
+    while (leftMap.size > 0 && rightMap.size > 0 && foundAtLeastOneMatchForAnyRow) {
+        foundAtLeastOneMatchForAnyRow = false;
+
+        // map of hash to object, object of indexes array and raw row array
+        for (var leftHash of leftMap.keys()) {
+            var leftEntry = leftMap.get(leftHash);
+
+            // keep looping over remaining indexes in the current hash as long as we keep finding best matches
+            var foundMatchForCurrentRow = true;
+            while (leftEntry.indexes.length > 0 && foundMatchForCurrentRow) {
+                foundMatchForCurrentRow = false;
+
+                var bestMatchRightEntry = findBestMatchV2(leftEntry.row, rightMap);
+
+                // bestMatchRow is the row from the rightMap that best matches the current row from the left map
+                // we need to make sure the current left row is the best match for this right row
+                var bestMatchLeftEntry = findBestMatchV2(bestMatchRightEntry.row, leftMap);
+
+                if (leftEntry.row === bestMatchLeftEntry.row) {
+                    foundMatchForCurrentRow = true;
+                    foundAtLeastOneMatchForAnyRow = true;
+
+                    var numberOfMatches = (bestMatchLeftEntry.indexes.length > bestMatchRightEntry.indexes.length)
+                        ? bestMatchRightEntry.indexes.length
+                        : bestMatchLeftEntry.indexes.length;
+
+                    // push matches together (equal to number of matches)
+                    for (var i = 0; i < numberOfMatches; ++i) {
+                        leftAOA.push(bestMatchLeftEntry.row);
+                        rightAOA.push(bestMatchRightEntry.row);
+                    }
+
+                    // slice off as many matches as we can
+                    bestMatchLeftEntry.indexes = bestMatchLeftEntry.indexes.slice(numberOfMatches);
+                    bestMatchRightEntry.indexes = bestMatchRightEntry.indexes.slice(numberOfMatches);
+
+                    // remove if reduced to zero (at least one should be)
+                    if (bestMatchLeftEntry.indexes.length <= 0) {
+                        leftMap.delete(bestMatchLeftEntry.hash);
+                    }
+                    if (bestMatchRightEntry.indexes.length <= 0) {
+                        rightMap.delete(bestMatchRightEntry.hash);
+                    }
+                }
+            }
+        }
+    }
+
+    // push any unmatched left overs
+    pushLeftovers(leftMap, leftAOA);
+    pushLeftovers(rightMap, rightAOA);
+
+    return { leftAOA: leftAOA, rightAOA: rightAOA };
 };
