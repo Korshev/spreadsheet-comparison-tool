@@ -27,3 +27,18 @@ div .col {
     border-color: #222;
     border-style: solid;
 }
+
+.console {
+    height: 400px;
+    border-style: dashed;
+    border-width: 2px;
+    border-color: green;
+    background-color: black;
+    color: green;
+    width: 100%;
+}
+
+textarea {
+    height: 200px;
+    width: 100%;
+}

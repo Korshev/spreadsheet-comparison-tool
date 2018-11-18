@@ -1,16 +1,19 @@
 // DEPRECATED: move into comparison.js
 
-function handleRawText(){
+function handleRawText() {
     var leftRaw = document.getElementById('left').value;
     var rightRaw = document.getElementById('right').value;
 
-    var leftMap = getMapFromRawText(leftRaw);
-    var rightMap = getMapFromRawText(rightRaw);
-    compare(leftMap,rightMap);
+    var leftAOA = getAOAFromRawText(leftRaw);
+    var rightAOA = getAOAFromRawText(rightRaw);
+    compare(leftAOA, rightAOA);
 
 }
 
-function getMapFromRawText(rawText){
-    var array = rawText.split('\n');
-    return getMap(array);   
+function getAOAFromRawText(rawText) {
+    var array = [];
+    for (var line of rawText.split('\n')){
+        array.push([line]);
+    }
+    return array;
 }

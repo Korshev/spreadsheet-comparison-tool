@@ -7,12 +7,42 @@
     <title>Spreadsheet Comparison Tool</title>
     <script src="comparison.js"></script>
     <script src="rawText.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="sct.css">
 </head>
 
 <body>
-    <textarea id="left"></textarea>
-    <textarea id="right"></textarea>
-    <button onclick="handleRawText()">Compare</button>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1>Raw Text Comparison Tool</h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <textarea id="left"></textarea>
+            </div>
+            <div class="col">
+                <textarea id="right"></textarea>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <button onclick="handleRawText()">Compare</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <textarea readonly id="output" class="console"></textarea>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

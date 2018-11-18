@@ -1,9 +1,7 @@
 <!-- 
-    FEATURE
-    TODO: Autodownload matched diffs when done so that they can be compared with excel compare tool
-
     *** VISUAL OUTPUT ***
     TODO: Progress bars, narrated console ouput, timed methods, etc...
+    TODO: there's no visual summary of what's going on
 
     IMPROVE MATCHING
     TODO: Way to display diffs (not just download and diff with other tool)
@@ -16,7 +14,6 @@
     TODO: drag and drop isn't locked down to spreadsheets...
     TODO: throw comparison.js into it's own web worker so it can run in the background
     TODO: add interrupts to the workers to kill long running processes
-    TODO: there's no visual summary of what's going on
     TODO: Code Spell Checker or Spell Right
     TODO: consider moving functions to inner scopes
 -->

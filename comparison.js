@@ -70,18 +70,32 @@ function compare(leftJson, rightJson) {
     console.log(leftMap);
     console.log(rightMap);
 
+    var out = document.getElementById('output');
+
     if (leftMap.size === 0 && rightMap.size === 0) {
-        alert("The two files are equal");
+        out.innerText += "The two files are equal";
     } else {
         var AOAs = sortLeftoversV2(leftMap, rightMap);
         console.log('--- raw AOAs AFTER comparing ROWS ---')
         console.log(AOAs.leftAOA);
         console.log(AOAs.rightAOA);
         var message = buildMessage(leftJson, rightJson, AOAs.leftAOA, AOAs.rightAOA);
-        alert(message);
+        out.innerText += message;
         console.log(message);
+
+        //TODO: figure out a way to get the original file names here
+        downloadDiff(AOAs.leftAOA,"left-diff");
+        downloadDiff(AOAs.rightAOA,"right-diff");
     }
 };
+
+//TODO: it'd be great if we could throw this into a web worker - but the download doesn't work there...
+function downloadDiff(ws_data, name){
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, name);
+    XLSX.writeFile(wb,name+".xlsx");//triggers download
+}
 
 //TODO: get rid of this
 function buildMessage(leftJson, rightJson, leftAOA, rightAOA) {
@@ -182,6 +196,7 @@ function sortLeftoversV2(leftMap, rightMap) {
         }
     }
 
+    // TODO: pushing is awkward when there are rows in both data sets that have 0 similarity
     // push any unmatched left overs
     pushLeftovers(leftMap, leftAOA);
     pushLeftovers(rightMap, rightAOA);
