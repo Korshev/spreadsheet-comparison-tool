@@ -30,12 +30,13 @@ div .col {
 
 .console {
     height: 400px;
-    border-style: dashed;
-    border-width: 2px;
+    border-style: double;
+    border-width: 4px;
     border-color: green;
     background-color: black;
     color: green;
     width: 100%;
+    font-family: monospace;
 }
 
 textarea {

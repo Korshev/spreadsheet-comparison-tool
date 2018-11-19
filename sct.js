@@ -24,7 +24,7 @@ function drop(e) {
 function handleDrop(e) {
     var files = e.dataTransfer.files;
     var button = e.target.nextElementSibling;
-    button.files =  e.dataTransfer.files; // triggers inputChange
+    button.files = files; // triggers inputChange
 }
 
 // input file
@@ -40,6 +40,7 @@ function inputChange(e) {
             ? document.getElementById('right')
             : document.getElementById('left');
 
+        // https://stackoverflow.com/questions/47119426/how-to-set-file-objects-and-length-property-at-filelist-object-where-the-files-a/47172409#47172409
         var dt = new DataTransfer();
         dt.items.add(files[0]);
         this.files = dt.files;
@@ -47,7 +48,8 @@ function inputChange(e) {
         dt = new DataTransfer();
         dt.items.add(files[1]);
         other.files = dt.files;
-        return; //no need to go further since we're retriggering this method
+
+        return; //no need to go further since we're re-triggering this method
     } else if (files.length > 2) {
         this.value = ''; // reset
         alert('Please select 1 or 2 files!');
@@ -55,8 +57,8 @@ function inputChange(e) {
 
     var file = this.files[0];
     var dropzone = e.target.previousElementSibling;
-    dropzone.innerText = (file) 
-        ? file.name + ' (' + file.size + ' bytes)' 
+    dropzone.innerText = (file)
+        ? file.name + ' (' + file.size + ' bytes)'
         : 'Drag and drop one or two files here...';
     dropzone.classList.add("drop");
     if (!file) {
@@ -65,12 +67,12 @@ function inputChange(e) {
 }
 
 // compare
-function clickCompare(){
+function clickCompare() {
     var leftFile = document.getElementById('left').files[0];
     var rightFile = document.getElementById('right').files[0];
 
-    if (leftFile && rightFile){
-        doTheThing(leftFile, rightFile);
+    if (leftFile && rightFile) {
+        compareFiles(leftFile, rightFile);
     } else {
         alert("Please select two files to compare!")
     }

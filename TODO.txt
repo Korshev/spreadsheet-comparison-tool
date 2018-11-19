@@ -1,19 +1,26 @@
 <!-- 
-    *** VISUAL OUTPUT ***
-    TODO: Progress bars, narrated console ouput, timed methods, etc...
-    TODO: there's no visual summary of what's going on
+    VISUAL OUTPUT
+    TODO: spinners, progress bars, timed methods
 
     IMPROVE MATCHING
-    TODO: Way to display diffs (not just download and diff with other tool)
-    TODO: rethink the data structure for matching hashes exactly and rows partially - separate?
+    TODO: way to display diffs (not just download and diff with other tool)
+    TODO: rethink (separating) the data structures for matching hashes and rows
 
-    HASHING ALGORTIHM
-    TODO: might need a bettter/faster hash function (murmur3?)  
+    HASHING ALGORITHM
+    TODO: might need a better/faster hash function (murmur3?)  
+
+    WEB WORKERS
+    TODO: separate file upload download from the XLSX workbook creation
+    TODO: throw downloadDiffs method inside a web worker (can't right 
+          now because the download fails in the web worker)
+
+    RAW TEXT
+    TODO: move raw text into the main page or flesh out the existing page (add links to main page and back)
+    TODO: flesh out the textToAOA method
 
     MISCELLANEOUS
     TODO: drag and drop isn't locked down to spreadsheets...
-    TODO: throw comparison.js into it's own web worker so it can run in the background
-    TODO: add interrupts to the workers to kill long running processes
-    TODO: Code Spell Checker or Spell Right
     TODO: consider moving functions to inner scopes
+    TODO: download checkbox
+    TODO: find a way to use web workers without the chrome web server app
 -->

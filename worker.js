@@ -15,9 +15,9 @@ self.addEventListener('message', function (e) {
 
         var sheets = workbook.SheetNames;
         var sheet = workbook.Sheets[sheets[0]];
-        var json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        var aoa = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-        self.postMessage(json);
+        self.postMessage(aoa);
         self.close();
     }
     reader.readAsArrayBuffer(file);

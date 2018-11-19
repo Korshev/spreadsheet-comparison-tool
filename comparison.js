@@ -1,7 +1,47 @@
-function getMap(json) {
+// this method should take two arrays of arrays and compare them, return diffs as two more AOAs
+
+function compare(leftAOA, rightAOA) {
+    write("begin converting AOAs into maps")
+    var leftMap = getMap(leftAOA);
+    var rightMap = getMap(rightAOA);
+    write("done converting AOAs into maps - begin finding hash matches")
+
+    leftMap.forEach(function (leftEntry, hash) {
+        if (rightMap.has(hash)) {
+            var rightEntry = rightMap.get(hash);
+
+            if (leftEntry.indexes.length === rightEntry.indexes.length) {
+                leftMap.delete(hash);
+                rightMap.delete(hash);
+            } else if (leftEntry.indexes.length > rightEntry.indexes.length) {
+                leftEntry.indexes = leftEntry.indexes.slice(0, -rightEntry.indexes.length);
+                rightMap.delete(hash);
+            } else if (leftEntry.indexes.length < rightEntry.indexes.length) {
+                rightEntry.indexes = rightEntry.indexes.slice(0, -leftEntry.indexes.length);
+                leftMap.delete(hash);
+            } else {
+                return new DOMException("Run Screaming!");
+            }
+        }
+    });
+    write("done finding hash matches - begin matching leftover rows")
+    var diffs = sortLeftovers(leftMap, rightMap);
+    write("done matching leftover rows")
+
+    if (diffs.leftAOA.length === 0 && diffs.rightAOA.length === 0) {
+        write("the two files are equal");
+    } else {
+        // var message = buildMessage(leftAOA, rightAOA, diffs.leftAOA, diffs.rightAOA);
+        // write(message);
+        write("the files are different")
+    }
+    return diffs;
+};
+
+function getMap(aoa) {
     var map = new Map();
 
-    json.forEach(function (row, index) {
+    aoa.forEach(function (row, index) {
         var hash = hashRow(row);
         if (map.has(hash)) {
             map.get(hash).indexes.push(index);
@@ -33,115 +73,7 @@ function hashString(row) {
     return hash;
 };
 
-// TODO: rewrite this
-function compare(leftJson, rightJson) {
-    console.clear()
-    console.log('--- raw AOAs  ---')
-    console.log(leftJson);
-    console.log(rightJson);
-
-    var leftMap = getMap(leftJson);
-    var rightMap = getMap(rightJson);
-
-    console.log('--- raw maps BEFORE comparing HASHES ---')
-    console.log(leftMap);
-    console.log(rightMap);
-
-    leftMap.forEach(function (leftEntry, hash) {
-        if (rightMap.has(hash)) {
-            var rightEntry = rightMap.get(hash);
-
-            if (leftEntry.indexes.length === rightEntry.indexes.length) {
-                leftMap.delete(hash);
-                rightMap.delete(hash);
-            } else if (leftEntry.indexes.length > rightEntry.indexes.length) {
-                leftEntry.indexes = leftEntry.indexes.slice(0, -rightEntry.indexes.length);
-                rightMap.delete(hash);
-            } else if (leftEntry.indexes.length < rightEntry.indexes.length) {
-                rightEntry.indexes = rightEntry.indexes.slice(0, -leftEntry.indexes.length);
-                leftMap.delete(hash);
-            } else {
-                return new DOMException("Run Screaming!");
-            }
-        }
-    });
-
-    console.log('--- raw maps AFTER comparing HASHES ---')
-    console.log(leftMap);
-    console.log(rightMap);
-
-    var out = document.getElementById('output');
-
-    if (leftMap.size === 0 && rightMap.size === 0) {
-        out.innerText += "The two files are equal";
-    } else {
-        var AOAs = sortLeftoversV2(leftMap, rightMap);
-        console.log('--- raw AOAs AFTER comparing ROWS ---')
-        console.log(AOAs.leftAOA);
-        console.log(AOAs.rightAOA);
-        var message = buildMessage(leftJson, rightJson, AOAs.leftAOA, AOAs.rightAOA);
-        out.innerText += message;
-        console.log(message);
-
-        //TODO: figure out a way to get the original file names here
-        downloadDiff(AOAs.leftAOA,"left-diff");
-        downloadDiff(AOAs.rightAOA,"right-diff");
-    }
-};
-
-//TODO: it'd be great if we could throw this into a web worker - but the download doesn't work there...
-function downloadDiff(ws_data, name){
-    var wb = XLSX.utils.book_new();
-    var ws = XLSX.utils.aoa_to_sheet(ws_data);
-    XLSX.utils.book_append_sheet(wb, ws, name);
-    XLSX.writeFile(wb,name+".xlsx");//triggers download
-}
-
-//TODO: get rid of this
-function buildMessage(leftJson, rightJson, leftAOA, rightAOA) {
-    var message = "There were " + leftAOA.length + " rows (of "+leftJson.length+") in the left file and " 
-    + rightAOA.length + " rows (of "+rightJson.length+") in the right file that could not be perfectly matched. They were matched like this: \n"
-
-    var max = (leftAOA.length > rightAOA.length) ? leftAOA.length : rightAOA.length;
-    for (var index = 0; index < max; ++index) {
-        message += "\n" + leftAOA[index] + " --- " + rightAOA[index];
-    }
-    return message;
-}
-
-function getMatchScore(leftRow, rightRow) {
-    var score = 0;
-    for (var index in leftRow) {
-        score += leftRow[index] === rightRow[index];
-    }
-    return score;
-}
-
-function findBestMatchV2(targetRow, map) {
-    var bestMatchScore = 0;
-    var bestMatchEntry = {};
-    for (var hash of map.keys()) {
-        var entry = map.get(hash);
-        var matchScore = getMatchScore(targetRow, entry.row);
-        if (matchScore > bestMatchScore) {
-            bestMatchScore = matchScore;
-            bestMatchEntry = entry;
-        }
-    }
-    // console.log(targetRow, bestMatchEntry, bestMatchScore)
-    return bestMatchEntry;
-}
-
-function pushLeftovers(map, aoa) {
-    for (var hash of map.keys()) {
-        var entry = map.get(hash);
-        for (var index in entry.indexes) {
-            aoa.push(entry.row);
-        }
-    }
-}
-
-function sortLeftoversV2(leftMap, rightMap) {
+function sortLeftovers(leftMap, rightMap) {
 
     var leftAOA = [];
     var rightAOA = [];
@@ -160,11 +92,10 @@ function sortLeftoversV2(leftMap, rightMap) {
             while (leftEntry.indexes.length > 0 && foundMatchForCurrentRow) {
                 foundMatchForCurrentRow = false;
 
-                var bestMatchRightEntry = findBestMatchV2(leftEntry.row, rightMap);
-
-                // bestMatchRow is the row from the rightMap that best matches the current row from the left map
+                // bestMatchRightEntry is the entry from the rightMap that best matches the current row from the left map
                 // we need to make sure the current left row is the best match for this right row
-                var bestMatchLeftEntry = findBestMatchV2(bestMatchRightEntry.row, leftMap);
+                var bestMatchRightEntry = findBestMatch(leftEntry.row, rightMap);
+                var bestMatchLeftEntry = findBestMatch(bestMatchRightEntry.row, leftMap);
 
                 if (leftEntry.row === bestMatchLeftEntry.row) {
                     foundMatchForCurrentRow = true;
@@ -196,10 +127,40 @@ function sortLeftoversV2(leftMap, rightMap) {
         }
     }
 
-    // TODO: pushing is awkward when there are rows in both data sets that have 0 similarity
     // push any unmatched left overs
     pushLeftovers(leftMap, leftAOA);
     pushLeftovers(rightMap, rightAOA);
 
     return { leftAOA: leftAOA, rightAOA: rightAOA };
 };
+
+function findBestMatch(targetRow, map) {
+    var bestMatchScore = 0;
+    var bestMatchEntry = {};
+    for (var hash of map.keys()) {
+        var entry = map.get(hash);
+        var matchScore = getMatchScore(targetRow, entry.row);
+        if (matchScore > bestMatchScore) {
+            bestMatchScore = matchScore;
+            bestMatchEntry = entry;
+        }
+    }
+    return bestMatchEntry;
+}
+
+function getMatchScore(leftRow, rightRow) {
+    var score = 0;
+    for (var index in leftRow) {
+        score += leftRow[index] === rightRow[index];
+    }
+    return score;
+}
+
+function pushLeftovers(map, aoa) {
+    for (var hash of map.keys()) {
+        var entry = map.get(hash);
+        for (var index in entry.indexes) {
+            aoa.push(entry.row);
+        }
+    }
+}
