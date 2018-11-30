@@ -26,7 +26,7 @@ function compareAOAs(leftName, leftAOA, rightName, rightAOA) {
 function downloadDiff(aoa, name) {
     var wb = XLSX.utils.book_new();
     var ws = XLSX.utils.aoa_to_sheet(aoa);
-    XLSX.utils.book_append_sheet(wb, ws, name);
+    XLSX.utils.book_append_sheet(wb, ws, name.substring(0,31)); //XLSX limits sheet names to 31 characters
     XLSX.writeFile(wb, "diff --- " + name); // triggers download
 }
 
