@@ -24,6 +24,10 @@ function compareAOAs(leftName, leftAOA, rightName, rightAOA) {
 }
 
 function downloadDiff(aoa, name) {
+    if (aoa && aoa.length === 0){
+        return;
+    }
+
     var wb = XLSX.utils.book_new();
     var ws = XLSX.utils.aoa_to_sheet(aoa);
     XLSX.utils.book_append_sheet(wb, ws, name.substring(0,31)); //XLSX limits sheet names to 31 characters

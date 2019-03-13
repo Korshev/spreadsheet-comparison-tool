@@ -26,14 +26,14 @@ function compare(leftAOA, rightAOA) {
     });
     write("done finding hash matches - begin matching leftover rows")
     var diffs = sortLeftovers(leftMap, rightMap);
-    write("done matching leftover rows")
+    write("done matching leftover rows");
 
     if (diffs.leftAOA.length === 0 && diffs.rightAOA.length === 0) {
         write("the two files are equal");
     } else {
         // var message = buildMessage(leftAOA, rightAOA, diffs.leftAOA, diffs.rightAOA);
         // write(message);
-        write("the files are different")
+        write("the files are different");
     }
     return diffs;
 };
