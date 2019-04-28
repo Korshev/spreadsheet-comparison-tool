@@ -3,12 +3,29 @@
  * actual comparison algorithm
  */
 
-async function compareFiles(leftFile, rightFile) {
+async function compareFiles(leftFile, rightFile, ignoredColumns) {
     clear();
     write("sending " + leftFile.name + " and " + rightFile.name + " to web workers");
     //https://stackoverflow.com/questions/35612428/call-async-await-functions-in-parallel
     [leftAOA, rightAOA] = await Promise.all([getAOAFromFile(leftFile), getAOAFromFile(rightFile)]);
+    prepareAOAs(leftAOA, rightAOA, ignoredColumns);
     compareAOAs(leftFile.name, leftAOA, rightFile.name, rightAOA);
+}
+
+function prepareAOAs(leftAOA, rightAOA, ignoredColumns){
+    removeColumns(leftAOA, ignoredColumns);
+    removeColumns(rightAOA, ignoredColumns);
+}
+
+function removeColumns(AOA, ignoredColumns){
+    if (ignoredColumns.length <= 0)
+        return;
+        
+    for (var row of AOA){
+        for (var col of ignoredColumns){
+            row.splice(col-1,1); //columns come in one based, reset to zero based
+        }
+    }
 }
 
 function compareText(leftText, rightText) {

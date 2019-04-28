@@ -70,11 +70,17 @@ function inputChange(e) {
 function clickCompare() {
     var leftFile = document.getElementById('left').files[0];
     var rightFile = document.getElementById('right').files[0];
+    var ignoredColumns = document.getElementById('ignoredColumnsText').value;
+    if (ignoredColumns === ""){
+        ignoredColumns = [];
+    } else {
+        ignoredColumns = ignoredColumns.split(',').sort((a, b) => b - a); //sort backwards to delete columns from right to left to preserve column indexes
+    }
 
     if (leftFile && rightFile) {
-        compareFiles(leftFile, rightFile);
+        compareFiles(leftFile, rightFile, ignoredColumns);
     } else {
-        alert("Please select two files to compare!")
+        alert("Please select two files to compare!");
     }
 }
 
