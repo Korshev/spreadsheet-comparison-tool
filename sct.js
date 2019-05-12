@@ -78,7 +78,8 @@ function clickCompare() {
     }
 
     if (leftFile && rightFile) {
-        compareFiles(leftFile, rightFile, ignoredColumns);
+        // compareFiles(leftFile, rightFile, ignoredColumns);
+        compareFilesWB(leftFile, rightFile, ignoredColumns);
     } else {
         alert("Please select two files to compare!");
     }

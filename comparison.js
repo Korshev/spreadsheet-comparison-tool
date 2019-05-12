@@ -1,10 +1,23 @@
 // this method should take two arrays of arrays and compare them, return diffs as two more AOAs
 
+function compareWB(leftWB, rightWB) {
+    if (leftWB.length != rightWB.length){
+        alert("files have different number of tabs...");
+        return;
+    }
+    var diffsWB = [];
+    for (var index in leftWB){
+        var diffsTab = compare(leftWB[index],rightWB[index]);
+        diffsWB.push(diffsTab);
+    }
+    return diffsWB;
+};
+
 function compare(leftAOA, rightAOA) {
-    write("begin converting AOAs into maps")
+    write("begin converting AOAs into maps");
     var leftMap = getMap(leftAOA);
     var rightMap = getMap(rightAOA);
-    write("done converting AOAs into maps - begin finding hash matches")
+    write("done converting AOAs into maps - begin finding hash matches");
 
     leftMap.forEach(function (leftEntry, hash) {
         if (rightMap.has(hash)) {
