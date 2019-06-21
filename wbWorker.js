@@ -14,14 +14,14 @@ self.addEventListener('message', function (e) {
         var workbook = XLSX.read(data, { type: 'array' });
 
         var wb = [];
-        var sheets = workbook.SheetNames;
-        for (var index in sheets){
-            var sheet = workbook.Sheets[sheets[index]];
+        var sheetNames = workbook.SheetNames;
+        for (var index in sheetNames){
+            var sheet = workbook.Sheets[sheetNames[index]];
             var aoa = XLSX.utils.sheet_to_json(sheet, { header: 1 });
             wb.push(aoa);
         }
 
-        self.postMessage(wb);
+        self.postMessage({wb, sheetNames});
         self.close();
     }
     reader.readAsArrayBuffer(file);

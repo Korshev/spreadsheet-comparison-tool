@@ -17,8 +17,8 @@ async function compareFilesWB(leftFile, rightFile, ignoredColumns) {
     write("sending " + leftFile.name + " and " + rightFile.name + " to WB workers");
     //https://stackoverflow.com/questions/35612428/call-async-await-functions-in-parallel
     [leftWB, rightWB] = await Promise.all([getWBFromFile(leftFile), getWBFromFile(rightFile)]);
-    prepareWBs(leftWB, rightWB, ignoredColumns);
-    compareWBs(leftFile.name, leftWB, rightFile.name, rightWB);
+    prepareWBs(leftWB.wb, rightWB.wb, ignoredColumns);
+    compareWBs(leftFile.name, leftWB.wb, rightFile.name, rightWB.wb, leftWB.sheetNames); // TODO: also pass rightWB names...
 }
 
 function prepareWBs(leftWB, rightWB, ignoredColumns){
@@ -58,9 +58,9 @@ function compareAOAs(leftName, leftAOA, rightName, rightAOA) {
     downloadDiff(diffs.rightAOA, rightName);
 }
 
-function compareWBs(leftName, leftWB, rightName, rightWB) {
-    var diffs = compareWB(leftWB, rightWB);
-    downloadDiffWB(diffs, leftName, rightName);
+function compareWBs(leftName, leftWB, rightName, rightWB, names) {
+    var diffs = compareWB(leftWB, rightWB, names);
+    downloadDiffWB(diffs, leftName, rightName, names);
 }
 
 function downloadDiff(aoa, name) {
@@ -74,7 +74,7 @@ function downloadDiff(aoa, name) {
     XLSX.writeFile(wb, "diff --- " + name); // triggers download
 }
 
-function downloadDiffWB(wb, leftName, rightName) {
+function downloadDiffWB(wb, leftName, rightName, names) {
     if (wb && wb.length === 0){
         return;
     }
@@ -83,7 +83,7 @@ function downloadDiffWB(wb, leftName, rightName) {
 
     for (var index in wb){
         var ws = XLSX.utils.aoa_to_sheet(wb[index].leftAOA);
-        XLSX.utils.book_append_sheet(leftWBDiffs, ws, "Sheet " + index);
+        XLSX.utils.book_append_sheet(leftWBDiffs, ws, names[index]);
     }
     
     XLSX.writeFile(leftWBDiffs, "diff --- " + leftName); // triggers download
@@ -94,7 +94,7 @@ function downloadDiffWB(wb, leftName, rightName) {
 
     for (var index in wb){
         var ws = XLSX.utils.aoa_to_sheet(wb[index].rightAOA);
-        XLSX.utils.book_append_sheet(rightWBDiffs, ws, "Sheet " + index);
+        XLSX.utils.book_append_sheet(rightWBDiffs, ws,  names[index]);
     }
     
     XLSX.writeFile(rightWBDiffs, "diff --- " + rightName); // triggers download

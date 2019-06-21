@@ -1,23 +1,33 @@
 // this method should take two arrays of arrays and compare them, return diffs as two more AOAs
 
-function compareWB(leftWB, rightWB) {
+function compareWB(leftWB, rightWB, names) {
     if (leftWB.length != rightWB.length){
         alert("files have different number of tabs...");
         return;
     }
     var diffsWB = [];
     for (var index in leftWB){
+        write("Begin converting the tabs named " + names[index] + " into maps. ");
+        
         var diffsTab = compare(leftWB[index],rightWB[index]);
+
+        if (diffsTab.leftAOA.length === 0 && diffsTab.rightAOA.length === 0) {
+            write("The tabs named '" + names[index] + "' are the same. ");
+        } else {
+            // var message = buildMessage(leftAOA, rightAOA, diffs.leftAOA, diffs.rightAOA);
+            // write(message);
+            write("The tabs named '" + names[index] + "' are DIFFERENT. ");
+        }
+
         diffsWB.push(diffsTab);
     }
     return diffsWB;
 };
 
 function compare(leftAOA, rightAOA) {
-    write("begin converting AOAs into maps");
     var leftMap = getMap(leftAOA);
     var rightMap = getMap(rightAOA);
-    write("done converting AOAs into maps - begin finding hash matches");
+    write("\tdone converting AOAs into maps - begin finding hash matches");
 
     leftMap.forEach(function (leftEntry, hash) {
         if (rightMap.has(hash)) {
@@ -37,17 +47,9 @@ function compare(leftAOA, rightAOA) {
             }
         }
     });
-    write("done finding hash matches - begin matching leftover rows")
+    write("\tdone finding hash matches - begin matching leftover rows")
     var diffs = sortLeftovers(leftMap, rightMap);
-    write("done matching leftover rows");
-
-    if (diffs.leftAOA.length === 0 && diffs.rightAOA.length === 0) {
-        write("the two files are equal");
-    } else {
-        // var message = buildMessage(leftAOA, rightAOA, diffs.leftAOA, diffs.rightAOA);
-        // write(message);
-        write("the files are different");
-    }
+    write("\tdone matching leftover rows");
     return diffs;
 };
 
