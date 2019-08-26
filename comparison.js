@@ -9,7 +9,7 @@ function compareWB(leftWB, rightWB, names) {
     for (var index in leftWB){
         write("Begin converting the tabs named " + names[index] + " into maps. ");
         
-        var diffsTab = compare(leftWB[index],rightWB[index]);
+        var diffsTab = compare(leftWB[index], rightWB[index]);
 
         if (diffsTab.leftAOA.length === 0 && diffsTab.rightAOA.length === 0) {
             write("The tabs named '" + names[index] + "' are the same. ");
@@ -90,8 +90,22 @@ function hashString(row) {
 
 function sortLeftovers(leftMap, rightMap) {
 
-    var leftAOA = [];
-    var rightAOA = [];
+    var max = 0;
+    for (var key of leftMap.keys()){
+        var temp = leftMap.get(key).row.length;
+        if (temp > max){
+            max = temp;
+        }
+    } 
+
+    var A = 'A'.charCodeAt(0);
+    var header = ['line #'];
+    for (var i=0; i<max; ++i){
+        header.push(String.fromCharCode(A+i))
+    }
+
+    var leftAOA = [header];
+    var rightAOA = [header];
 
     // keep looping over all remaining hashes as long as we keep finding best matches
     var foundAtLeastOneMatchForAnyRow = true;
@@ -122,8 +136,9 @@ function sortLeftovers(leftMap, rightMap) {
 
                     // push matches together (equal to number of matches)
                     for (var i = 0; i < numberOfMatches; ++i) {
-                        leftAOA.push(bestMatchLeftEntry.row);
-                        rightAOA.push(bestMatchRightEntry.row);
+                        var bestMatch = getDifferencesOnly(bestMatchLeftEntry.row, bestMatchRightEntry.row);
+                        leftAOA.push([bestMatchLeftEntry.indexes[i], ...bestMatchLeftEntry.row]);
+                        rightAOA.push([bestMatchRightEntry.indexes[i], ...bestMatchRightEntry.row]);
                     }
 
                     // slice off as many matches as we can
@@ -143,11 +158,31 @@ function sortLeftovers(leftMap, rightMap) {
     }
 
     // push any unmatched left overs
-    pushLeftovers(leftMap, leftAOA);
+    var extra = pushLeftovers(leftMap, leftAOA);
+    for (i=0; i<extra; ++i){
+        rightAOA.push([]);
+    }
     pushLeftovers(rightMap, rightAOA);
 
     return { leftAOA: leftAOA, rightAOA: rightAOA };
-};
+}
+
+function getDifferencesOnly(left, right){
+    var length = left.length > right.length ? left.length : right.length;
+    for (var index = 0; index < length; ++index){
+        if (!left[index]){
+            left[index] = "EMPTY";
+        }
+        if (!right[index]){
+            right[index] = "EMPTY";
+        }
+        if (left[index] === right[index]){
+            left[index] = "";
+            right[index] = "";
+        }
+    }
+    console.log(left, right);
+}
 
 function findBestMatch(targetRow, map) {
     var bestMatchScore = 0;
@@ -172,10 +207,13 @@ function getMatchScore(leftRow, rightRow) {
 }
 
 function pushLeftovers(map, aoa) {
+    var count = 0;
     for (var hash of map.keys()) {
         var entry = map.get(hash);
-        for (var index in entry.indexes) {
-            aoa.push(entry.row);
+        for (var index of entry.indexes) {
+            aoa.push([index, ...entry.row]);
+            ++count;
         }
     }
+    return count;
 }
